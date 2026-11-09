@@ -1,0 +1,59 @@
+name: 报告问题
+description: Wren 出了错、显示不对或者用不了
+labels: ["问题"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。**请不要贴邮箱授权码、密码、API Key，也不要贴别人的邮件内容和邮箱地址**，截图前请先遮住。
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么
+      description: 你看到了什么，原本以为会怎样。界面上的报错请照原样贴出来。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 怎么重现
+      description: 一步一步写，比如「打开某个邮箱 → 点某封邮件 → 点回复」。
+      placeholder: |
+        1.
+        2.
+        3.
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 设备
+      multiple: true
+      options:
+        - Mac
+        - Windows
+        - iPhone / iPad
+        - Android
+    validations:
+      required: true
+  - type: dropdown
+    id: mailbox
+    attributes:
+      label: 用的是哪种邮箱
+      multiple: true
+      options:
+        - QQ 邮箱
+        - Gmail
+        - Outlook / Hotmail
+        - iCloud 邮件
+        - 网易 163 / 126
+        - 腾讯企业邮
+        - 其他（自己填的服务器）
+  - type: input
+    id: version
+    attributes:
+      label: Wren 版本和系统版本
+      placeholder: 例如 Wren 1.0.0，macOS 26.1
+  - type: textarea
+    id: shots
+    attributes:
+      label: 截图
+      description: 可以直接拖进来。记得先遮住邮箱地址和邮件内容。

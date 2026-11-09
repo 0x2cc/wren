@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 功能建议和使用交流
+    url: https://github.com/0x2cc/wren/discussions
+    about: 想要的功能、使用中的想法，欢迎到讨论区聊。

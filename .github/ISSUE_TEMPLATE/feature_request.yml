@@ -1,0 +1,26 @@
+name: 功能建议
+description: 希望 Wren 增加或改进的功能
+labels: ["建议"]
+body:
+  - type: textarea
+    id: scene
+    attributes:
+      label: 你想做什么
+      description: 说说你遇到的场景，比如「每天早上想先看重要的几封」。
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你希望它怎么做
+      description: 可以写你设想的做法，也可以说其他邮件 App 是怎么做的。
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 主要在哪台设备上用
+      multiple: true
+      options:
+        - Mac
+        - Windows
+        - iPhone / iPad
+        - Android

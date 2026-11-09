@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wren</title>
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<meta property="og:title" content="Wren">
+<meta property="og:description" content="邮件，安静一点。Wren 是一个安静、好看的邮件客户端，支持 Mac、Windows、iPhone 和 Android。">
+<meta property="og:image" content="https://0x2cc.github.io/wren/assets/inbox-light.jpg">
+<style>
+  :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+<meta name="description" content="Wren，一个安静、好看的邮件客户端。Mac、Windows、iPhone、Android。">
+<style>
+/* 版式：Apple 产品页的做法——半透明顶栏，一屏一个主张，大标题 + 整张产品截图，下面是不等大的卡片网格 */
+:root {
+  --bg: #fbfbfd;
+  --surface: #ffffff;
+  --surface-2: #f2f1f7;
+  --fg: #1d1d1f;
+  --muted: #6e6e73;
+  --line: rgba(29, 29, 31, 0.08);
+  --accent: #6447d6;
+  --accent-2: #3d8bfd;
+  --accent-soft: rgba(100, 71, 214, 0.08);
+  --accent-fill: #6447d6;
+  --nav: rgba(251, 251, 253, 0.72);
+  --shadow: 0 30px 80px -30px rgba(40, 30, 90, 0.35);
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --surface: #111114; --surface-2: #17161d; --fg: #f5f5f7; --muted: #8e8e93;
+    --line: rgba(245, 245, 247, 0.1); --accent: #a993ff; --accent-2: #6aa8ff; --accent-soft: rgba(169, 147, 255, 0.12); --accent-fill: #6a4fe0;
+    --nav: rgba(0, 0, 0, 0.68); --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #111114; --surface-2: #17161d; --fg: #f5f5f7; --muted: #8e8e93;
+  --line: rgba(245, 245, 247, 0.1); --accent: #a993ff; --accent-2: #6aa8ff; --accent-soft: rgba(169, 147, 255, 0.12); --accent-fill: #6a4fe0;
+  --nav: rgba(0, 0, 0, 0.68); --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9);
+  color-scheme: dark;
+}
+
+/* 深浅色各一套截图 */
+.shot-dark { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shot-light { display: none; }
+  :root:not([data-theme="light"]) .shot-dark { display: block; }
+}
+:root[data-theme="dark"] .shot-light { display: none; }
+:root[data-theme="dark"] .shot-dark { display: block; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 17px/1.5 var(--font-text);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: max(22px, env(safe-area-inset-left, 0px));
+  padding-right: max(22px, env(safe-area-inset-right, 0px));
+}
+
+/* 顶栏 */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--nav); }
+.nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--nav);
+  -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav .wrap { display: flex; align-items: center; gap: 28px; height: 48px; }
+.brand { display: flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 600; font-size: 17px; }
+.brand img { width: 22px; height: 22px; border-radius: 5px; }
+.nav-links { display: flex; gap: 24px; margin-left: auto; font-size: 13px; }
+.nav-links a { color: var(--muted); }
+.nav-links a:hover { color: var(--fg); text-decoration: none; }
+@media (max-width: 640px) { .nav-links a.opt { display: none; } }
+
+/* 第一屏 */
+.hero { text-align: center; padding-block: 88px 40px; }
+.hero .icon { width: 96px; height: 96px; margin: 0 auto 22px; border-radius: 22px; box-shadow: 0 12px 30px -10px rgba(80, 60, 200, 0.45); }
+.eyebrow { font-size: 21px; font-weight: 600; color: var(--muted); letter-spacing: -0.01em; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+.hero h1 {
+  font-size: clamp(48px, 9vw, 96px); line-height: 1.04; font-weight: 700; letter-spacing: -0.035em;
+  margin-top: 6px;
+  background: linear-gradient(100deg, var(--fg) 30%, var(--accent) 70%, var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero .lede { max-width: 640px; margin: 20px auto 0; font-size: clamp(19px, 2.3vw, 24px); line-height: 1.4; color: var(--muted); font-weight: 500; }
+.platforms { margin-top: 18px; font-size: 14px; color: var(--muted); letter-spacing: 0.02em; }
+.cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 22px; border-radius: 980px;
+  font-size: 17px; font-weight: 500; border: 0; cursor: default; font-family: inherit;
+}
+.btn-primary { background: var(--accent-fill); color: #fff; }
+a.btn-primary:hover { text-decoration: none; filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--accent); padding: 0 6px; }
+.btn-ghost:hover { text-decoration: underline; }
+.btn-primary[aria-disabled="true"] { opacity: 0.92; }
+
+.hero-shot { margin-top: 56px; }
+.frame {
+  border-radius: 18px; overflow: hidden; background: var(--surface);
+  box-shadow: var(--shadow); border: 1px solid var(--line);
+}
+.frame img { width: 100%; height: auto; }
+
+/* 分段大标题 */
+.section { padding-block: 110px 0; }
+.section-head { text-align: center; max-width: 760px; margin: 0 auto 56px; }
+.section-head .kicker { font-size: 17px; font-weight: 600; color: var(--accent); }
+.section-head h2 { font-size: clamp(36px, 6vw, 64px); line-height: 1.06; font-weight: 700; letter-spacing: -0.03em; margin-top: 8px; }
+.section-head p { font-size: clamp(17px, 2vw, 21px); color: var(--muted); margin: 18px auto 0; max-width: 620px; line-height: 1.45; }
+
+/* 卡片网格（不等大） */
+.grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; }
+.tile {
+  background: var(--surface); border-radius: 28px; padding: 36px 36px 0; overflow: hidden;
+  display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line);
+}
+.tile.text-only { padding-bottom: 36px; }
+.tile h3 { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
+.tile p { color: var(--muted); margin: 12px 0 0; font-size: 17px; line-height: 1.5; }
+.tile .media { margin-top: 28px; margin-inline: -1px; }
+.tile .media img { border-radius: 16px 16px 0 0; border: 1px solid var(--line); border-bottom: 0; }
+.span-6 { grid-column: span 6; }
+.span-4 { grid-column: span 4; }
+.span-3 { grid-column: span 3; }
+.span-2 { grid-column: span 2; }
+@media (max-width: 860px) {
+  .span-4, .span-3, .span-2 { grid-column: span 6; }
+}
+.tile.wide { flex-direction: row; gap: 40px; align-items: center; padding: 40px 40px 0; }
+.tile.wide .copy { flex: 1 1 320px; min-width: 0; padding-bottom: 40px; }
+.tile.wide .media { flex: 1.4 1 420px; min-width: 0; margin-top: 0; align-self: flex-end; }
+@media (max-width: 860px) { .tile.wide { flex-direction: column; align-items: stretch; } .tile.wide .copy { padding-bottom: 0; } .tile.wide .media { margin-top: 24px; } }
+
+.phone { max-width: 300px; margin: 28px auto 0; }
+.phone img { border-radius: 28px 28px 0 0; border: 1px solid var(--line); border-bottom: 0; }
+
+.pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; padding: 0; list-style: none; }
+.pill-list li { font-size: 14px; padding: 6px 12px; border-radius: 980px; background: var(--surface-2); color: var(--fg); }
+.pill-list li.soon { color: var(--muted); }
+
+.points { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 14px; }
+.points li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; color: var(--muted); font-size: 16px; line-height: 1.5; }
+.points li b { color: var(--fg); font-weight: 600; }
+.check { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 1px; }
+
+.big-number { font-family: var(--font-display); font-size: clamp(56px, 8vw, 84px); font-weight: 700; letter-spacing: -0.04em; line-height: 1; color: var(--accent); margin-top: 18px; font-variant-numeric: tabular-nums; }
+
+/* 规格表 */
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+.spec { padding: 26px 24px 26px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.spec dt { font-size: 14px; color: var(--muted); }
+.spec dd { margin: 6px 0 0; font-size: 17px; line-height: 1.55; }
+
+/* 结尾 */
+.closing { text-align: center; padding-block: 130px 90px; }
+.closing h2 { font-size: clamp(40px, 7vw, 72px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; }
+.closing p { color: var(--muted); font-size: 19px; margin: 16px auto 0; max-width: 560px; }
+footer { border-top: 1px solid var(--line); padding-block: 22px 40px; font-size: 12px; color: var(--muted); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="页面导航">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/icon.png" alt="">Wren</a>
+    <div class="nav-links">
+      <a class="opt" href="#inbox">收件箱</a>
+      <a class="opt" href="#assistant">AI 助理</a>
+      <a class="opt" href="#privacy">隐私</a>
+      <a class="opt" href="#specs">规格</a>
+      <a href="https://github.com/0x2cc/wren/discussions">反馈</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="hero wrap">
+    <img class="icon" src="assets/icon.png" alt="Wren 图标">
+    <div class="eyebrow">Wren</div>
+    <h1>邮件，安静一点。</h1>
+    <p class="lede">把同一个人的来信归成一组，最重要的那封放在最前面。写信像写文档，回信可以交给 AI 起草，发不发由你决定。</p>
+    <div class="platforms">Mac · Windows · iPhone · Android</div>
+    <div class="cta">
+      <span class="btn btn-primary" role="button" aria-disabled="true">即将推出</span>
+      <a class="btn btn-ghost" href="#inbox">了解更多 ›</a>
+    </div>
+    <div class="hero-shot">
+      <div class="frame">
+        <img class="shot-light" src="assets/inbox-light.jpg" alt="Wren 电脑版：左侧文件夹和邮箱，中间按发件人分组的邮件列表，右侧读信区" width="2560" height="1640">
+        <img class="shot-dark" src="assets/inbox-dark.jpg" alt="Wren 电脑版深色外观" width="2560" height="1640" loading="lazy">
+      </div>
+    </div>
+  </header>
+
+  <section class="section wrap" id="inbox" aria-labelledby="inbox-title">
+    <div class="section-head">
+      <div class="kicker">收件箱</div>
+      <h2 id="inbox-title">一个人，一张卡片。</h2>
+      <p>同一个发件人的来信叠成一组，依旧按时间排序。顶部一句话告诉你有几封未读、谁的邮件最要紧。</p>
+    </div>
+    <div class="grid">
+      <article class="tile span-3">
+        <h3>分组，或者平铺。</h3>
+        <p>按发件人分组看全局，切到平铺一封封过。几个邮箱的来信放在同一个收件箱里，每封都标着来自哪个邮箱。</p>
+        <div class="phone">
+          <img class="shot-light" src="assets/phone-inbox-light.jpg" alt="Wren 手机版收件箱" width="780" height="1688" loading="lazy">
+          <img class="shot-dark" src="assets/phone-inbox-dark.jpg" alt="Wren 手机版收件箱深色外观" width="780" height="1688" loading="lazy">
+        </div>
+      </article>
+      <article class="tile span-3">
+        <h3>写信，像写文档。</h3>
+        <p>加粗、列表、引用、链接，图片直接粘进正文，附件拖进来就行。超过 20 MB 会先提醒你。</p>
+        <div class="media">
+          <img class="shot-light" src="assets/compose-light.jpg" alt="写信窗口：格式工具栏、正文里的列表和图片、附件" width="1520" height="1480" loading="lazy">
+          <img class="shot-dark" src="assets/compose-dark.jpg" alt="写信窗口深色外观" width="1520" height="1480" loading="lazy">
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="assistant" aria-labelledby="assistant-title">
+    <div class="section-head">
+      <div class="kicker">AI 助理</div>
+      <h2 id="assistant-title">它来起草，你来决定。</h2>
+      <p>问它「我有哪些未读邮件」，让它总结一封长信、起草回复、找出待办。发送、删除和归档，都要你在卡片上点了才会执行。</p>
+    </div>
+    <div class="grid">
+      <article class="tile span-6 wide">
+        <div class="copy">
+          <h3>就在读信区旁边。</h3>
+          <p>正在看的那封邮件自动成为上下文。一键「总结这封」「起草回复」「提取待办」，起草好的回信可以直接发，也可以转到写信窗口里再改。</p>
+          <ul class="points">
+            <li><span class="check">✓</span><span><b>按条件找信</b>：未读、星标、某个邮箱、某段时间、带附件，也能到服务器上搜更早的。</span></li>
+            <li><span class="check">✓</span><span><b>动手前先确认</b>：标为已读可以撤销；发送、删除、归档都弹出确认卡片，列清楚要做什么。</span></li>
+            <li><span class="check">✓</span><span><b>邮件里的指令不算数</b>：邮件内容只当作资料，里面写的「转发给某某」不会被照做。</span></li>
+          </ul>
+        </div>
+        <div class="media">
+          <img class="shot-light" src="assets/assistant-light.jpg" alt="AI 助理在读信区旁边起草了一封回复" width="2560" height="1640" loading="lazy">
+          <img class="shot-dark" src="assets/assistant-dark.jpg" alt="AI 助理深色外观" width="2560" height="1640" loading="lazy">
+        </div>
+      </article>
+      <article class="tile span-3">
+        <h3>用你自己的 AI。</h3>
+        <p>填上 API Key 就能用：OpenAI、DeepSeek、通义千问、Kimi、智谱，也支持 OpenRouter、本机的 Ollama 和任何兼容 OpenAI 接口的服务。可以单独设置代理和请求头。</p>
+        <div class="media">
+          <img class="shot-light" src="assets/ai-settings-light.jpg" alt="AI 服务设置页" width="1120" height="1480" loading="lazy">
+          <img class="shot-dark" src="assets/ai-settings-dark.jpg" alt="AI 服务设置页深色外观" width="1120" height="1480" loading="lazy">
+        </div>
+      </article>
+      <article class="tile span-3 text-only">
+        <h3>已经订阅了 ChatGPT 或 Claude？</h3>
+        <p>在电脑上，Wren 可以直接调用你已登录的 Codex 或 Claude Code，用的是你现有套餐的额度，不用另外申请 API Key。</p>
+        <ul class="pill-list" aria-label="本机程序">
+          <li>Codex</li>
+          <li>Claude Code</li>
+        </ul>
+        <p>调用时关掉了它们执行命令、读写文件的能力，只让它们回答问题。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="privacy" aria-labelledby="privacy-title">
+    <div class="section-head">
+      <div class="kicker">隐私</div>
+      <h2 id="privacy-title">你的邮件，只在你的设备上。</h2>
+      <p>Wren 没有自己的服务器。收信、发信直接连你的邮箱服务商，中间不经过任何人。</p>
+    </div>
+    <div class="grid">
+      <article class="tile span-2 text-only">
+        <h3>授权码进钥匙串。</h3>
+        <p>邮箱授权码、AI 的 Key 和代理密码，都存在系统自带的钥匙串或凭据管理器里，不写进普通文件。</p>
+      </article>
+      <article class="tile span-2 text-only">
+        <h3>图片先不加载。</h3>
+        <p>邮件里的远程图片默认不显示，避免发件人借图片知道你读了信。信得过的发件人，一键设为总是显示。</p>
+      </article>
+      <article class="tile span-2 text-only">
+        <h3>AI 只在你开口时工作。</h3>
+        <p>邮件内容只在你使用助理时才发给你选的服务商，第一次发送前会先问你。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="transfer" aria-labelledby="transfer-title">
+    <div class="section-head">
+      <div class="kicker">换设备</div>
+      <h2 id="transfer-title">扫一下，就搬过去了。</h2>
+      <p>在 Mac 上设置好，手机扫一下二维码，邮箱、授权码和设置一起过去，不用再输一遍。任何一台都可以出码，也都可以扫码。</p>
+    </div>
+    <div class="grid">
+      <article class="tile span-2">
+        <h3>只在你家的 Wi‑Fi 里传。</h3>
+        <p>二维码两分钟有效、只能用一次。两台设备先互相认证，再加密传输，不经过任何服务器。</p>
+        <div class="phone">
+          <img class="shot-light" src="assets/phone-transfer-light.jpg" alt="手机上显示的迁移二维码" width="780" height="1688" loading="lazy">
+          <img class="shot-dark" src="assets/phone-transfer-dark.jpg" alt="迁移二维码深色外观" width="780" height="1688" loading="lazy">
+        </div>
+      </article>
+      <article class="tile span-4">
+        <h3>导入前，先看清楚。</h3>
+        <p>每个邮箱是新增、更新还是保留本机的，哪些需要重新填写授权码，导入前都列给你看。</p>
+        <div class="media">
+          <img class="shot-light" src="assets/transfer-import-light.jpg" alt="导入清单：列出每个邮箱的处理方式" width="1120" height="1480" loading="lazy">
+          <img class="shot-dark" src="assets/transfer-import-dark.jpg" alt="导入清单深色外观" width="1120" height="1480" loading="lazy">
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="specs" aria-labelledby="specs-title">
+    <div class="section-head">
+      <div class="kicker">规格</div>
+      <h2 id="specs-title">支持你在用的邮箱。</h2>
+    </div>
+    <dl class="specs">
+      <div class="spec"><dt>邮箱服务商</dt><dd>QQ 邮箱、Gmail、Outlook / Hotmail、iCloud 邮件、网易 163 / 126、腾讯企业邮</dd></div>
+      <div class="spec"><dt>自己填服务器</dt><dd>IMAP、POP3，SSL / STARTTLS；Exchange 开发中</dd></div>
+      <div class="spec"><dt>平台</dt><dd>macOS、Windows、iOS、Android</dd></div>
+      <div class="spec"><dt>界面语言</dt><dd>简体中文、繁體中文（台灣）、繁體中文（香港）、English</dd></div>
+      <div class="spec"><dt>网络</dt><dd>SOCKS5 / HTTP 代理，收发信和 AI 请求都可以走代理</dd></div>
+      <div class="spec"><dt>外观</dt><dd>浅色、深色、跟随系统</dd></div>
+    </dl>
+  </section>
+
+  <section class="closing wrap" aria-labelledby="closing-title">
+    <h2 id="closing-title">Wren，<br>即将推出。</h2>
+    <p>Mac、Windows、iPhone 和 Android 版本正在打磨中。想要的功能、遇到的问题，欢迎在 GitHub 上告诉我们。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/0x2cc/wren/discussions">参与讨论</a>
+      <a class="btn btn-ghost" href="https://github.com/0x2cc/wren/issues/new/choose">报告问题 ›</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Wren · 独立开发的邮件客户端 · <a href="https://github.com/0x2cc/wren">GitHub</a></span>
+    <span>© 2026 Wren</span>
+  </div>
+</footer>
+</body>
+</html>
